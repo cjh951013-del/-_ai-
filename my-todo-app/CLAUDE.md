@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `my-todo-app/` 디렉터리는 현재 비어 있다. 스캐폴드, `package.json`, Supabase 설정 모두 아직 없다. 따라서 기존 코드를 검색하지 말고, 첫 작업은 프로젝트 부트스트랩(예: `npx create-next-app@latest .`)으로 간주한다.
 
+## 자주 쓰는 명령어
+
+아래 명령어는 부트스트랩이 끝난 뒤 `package.json`의 `scripts`와 Supabase CLI 설치를 전제로 한다. 스캐폴드 직후 이 명령어들이 모두 실제로 동작하는지 한 번 확인할 것.
+
+- `npm run dev` — 로컬 개발 서버 실행 (Next.js, 기본 `http://localhost:3000`).
+- `npm run test` — 전체 테스트 스위트 실행. 단일 테스트만 돌리려면 러너에 따라 `npm run test -- <파일경로>` 또는 `npm run test -- -t "<테스트 이름>"` 형태로 인자를 넘긴다. 새 기능은 [코딩 규칙 4]에 따라 이 명령으로 먼저 실패를 확인하고 구현에 들어간다.
+- `npm run lint` — ESLint 검사. 커밋/푸시 전에 클린 상태로 만든다.
+- `supabase gen types typescript --linked > lib/supabase/database.types.ts` — 원격 Supabase 스키마에서 TypeScript 타입을 재생성. 마이그레이션을 적용했거나 스키마가 바뀌었을 때마다 실행하고, 그 결과 타입을 `lib/` 안에서 import해서 쓴다 ([금지사항 4]의 `any` 회피 수단).
+- `npm run build` — 프로덕션 빌드. 타입 오류와 빌드 타임 에러를 잡는 최종 검증 단계이므로 PR을 마무리하기 전에 반드시 통과시킨다.
+
 ## 제품 범위
 
 1인용 개인 투두 앱이다. 멀티 테넌트 로직, 공유 기능, 팀 기능은 없다 — 인증, 스키마, UI 흐름 모두 그에 맞게 단순하게 유지한다. 요구 기능:
