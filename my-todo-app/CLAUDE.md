@@ -30,6 +30,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. **테스트 먼저 (TDD).** 새로운 동작 — 태스크 CRUD, 마감일 로직, 태그 필터링, 위젯 렌더링 등 — 을 구현하기 전에 실패하는 테스트를 먼저 작성한다. 테스트 없이 동작만 추가한 PR은 완료된 것으로 보지 않는다.
 5. **컴포넌트는 50줄 이내.** 각 컴포넌트 파일은 50줄 이내로 유지한다 (import와 `"use client"` 지시문은 제외). 50줄을 넘으면 자식 컴포넌트로 추출하거나, 로직을 `lib/` 헬퍼 또는 커스텀 훅으로 옮긴다 — 공백만 줄여서 맞추는 식의 압축은 금지.
 
+## 금지사항 (절대 하지 말 것)
+
+1. **데이터베이스에 직접 SQL 실행 금지.** `psql`, Supabase SQL Editor의 임시 쿼리, 코드 안의 raw SQL 문자열 등으로 운영 DB에 직접 쿼리를 날리지 않는다. 스키마 변경은 반드시 마이그레이션 파일(`supabase/migrations/`)로 관리하고 리뷰 가능한 형태로 커밋한다.
+2. **반드시 Supabase 클라이언트 경유.** Postgres에 직접 붙거나 별도 ORM(Prisma, Drizzle 등)을 끼워 넣지 않는다. 모든 데이터 접근은 [코딩 규칙 3]에 따라 `lib/` 안의 Supabase 클라이언트 헬퍼를 통한다. RLS와 Auth 컨텍스트를 우회하는 경로를 만들지 않는다.
+3. **환경변수 파일 커밋 금지.** `.env`, `.env.local`, `.env.*.local` 등 실제 키가 들어 있는 파일은 절대 커밋하지 않는다. `.gitignore`에 포함되어 있어야 하고, 공유용으로는 빈 값만 있는 `.env.example`만 둔다. 키가 실수로 푸시됐다면 즉시 사용자에게 알리고 로테이션을 권한다.
+4. **`any` 타입 사용 금지.** [코딩 규칙 1]의 연장선. `any`, 암묵적 `any`, `as any` 캐스팅 모두 금지. 타입을 모르면 `unknown`으로 받고 좁히거나, Supabase에서 생성한 DB 타입(`Database["public"]["Tables"]…`)을 가져다 쓴다.
+
 ## 코드가 생긴 뒤 지킬 관례
 
 - Supabase 키가 클라이언트 번들에 들어가지 않도록 한다: `SUPABASE_URL`, `SUPABASE_ANON_KEY`는 `.env.local`에 두고, `service_role` 키는 서버 측 코드(라우트 핸들러, 서버 컴포넌트, 서버 액션)에서만 사용한다.
