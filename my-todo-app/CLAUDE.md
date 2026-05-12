@@ -2,40 +2,40 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project status
+## 프로젝트 현황
 
-The `my-todo-app/` directory is currently empty. No scaffold, package.json, or Supabase config exists yet. Treat the first task as bootstrapping the project (e.g., `npx create-next-app@latest .`) rather than searching for existing code.
+`my-todo-app/` 디렉터리는 현재 비어 있다. 스캐폴드, `package.json`, Supabase 설정 모두 아직 없다. 따라서 기존 코드를 검색하지 말고, 첫 작업은 프로젝트 부트스트랩(예: `npx create-next-app@latest .`)으로 간주한다.
 
-## Product scope
+## 제품 범위
 
-Single-user (1인용) personal todo app. There is no multi-tenant logic, no sharing, and no team features — keep auth, schema, and UI flows simple accordingly. Required features:
+1인용 개인 투두 앱이다. 멀티 테넌트 로직, 공유 기능, 팀 기능은 없다 — 인증, 스키마, UI 흐름 모두 그에 맞게 단순하게 유지한다. 요구 기능:
 
-- **Task CRUD** — create, read, update, delete tasks.
-- **Due dates (마감일)** — each task can have a deadline; the UI should make overdue / upcoming state visible.
-- **Tag classification (태그 분류)** — tasks can be grouped/filtered by user-defined tags.
-- **Widget** — a compact embeddable view of tasks (e.g., desktop widget, browser-extension popup, or a standalone `/widget` route). The exact widget surface has not been chosen — confirm with the user before committing to an approach.
+- **태스크 CRUD** — 생성, 조회, 수정, 삭제.
+- **마감일** — 각 태스크는 마감일을 가질 수 있고, UI에서 지났는지 / 임박했는지 시각적으로 드러나야 한다.
+- **태그 분류** — 사용자가 정의한 태그로 태스크를 그룹화 / 필터링한다.
+- **위젯** — 태스크를 간략히 보여 주는 임베디드 뷰(예: 데스크톱 위젯, 브라우저 확장 팝업, 또는 `/widget` 라우트). 어떤 형태의 위젯인지는 아직 정해지지 않았다 — 구현 전에 사용자에게 확인할 것.
 
-## Stack
+## 기술 스택
 
-- **Next.js** (App Router unless the user requests Pages Router) — frontend and API routes.
-- **Supabase** — Postgres for tasks/tags, Supabase Auth for the single user, Realtime optional for live updates.
+- **Next.js** (사용자가 별도로 요청하지 않는 한 App Router 사용) — 프론트엔드와 API 라우트.
+- **Supabase** — 태스크/태그용 Postgres, 단일 사용자용 Supabase Auth, 필요 시 Realtime으로 실시간 갱신.
 
-Because this is a 1인용 app, Row Level Security can be scoped to a single `auth.uid()` owner per row. Don't build schema as if multiple users will collaborate on the same task.
+1인용 앱이므로 Row Level Security는 행마다 `auth.uid()` 소유자 한 명 기준으로 단순하게 잡으면 된다. 여러 사용자가 같은 태스크를 협업하는 듯한 스키마는 만들지 않는다.
 
-## Coding rules (must follow)
+## 코딩 규칙 (반드시 지킬 것)
 
-1. **TypeScript only.** No plain `.js`/`.jsx` source files. Do not introduce `// @ts-nocheck`, `// @ts-ignore`, or `any` to silence errors — fix the type. `strict` must stay on in `tsconfig.json`.
-2. **Server Components by default.** A file is a Server Component unless it begins with `"use client"` on the first line. Only mark a component `"use client"` when it actually needs browser-only APIs, state, or event handlers — and keep client boundaries as small as possible (lift state down, not up).
-3. **Supabase only via `lib/`.** All Supabase calls go through helpers in `lib/` (e.g., `lib/supabase/server.ts`, `lib/supabase/client.ts`, plus feature-level data helpers like `lib/tasks.ts`). Components, route handlers, and server actions must import from `lib/`, never call `createClient` or `.from(...)` inline.
-4. **Tests first (TDD).** Write a failing test before writing the implementation for any new behavior — task CRUD, due-date logic, tag filtering, widget rendering, etc. A PR that adds behavior without a preceding/accompanying test is incomplete.
-5. **Components ≤ 50 lines.** Each component file stays within 50 lines (excluding imports and `"use client"` directive). When a component grows past that, extract child components or move logic into a `lib/` helper or custom hook — do not flatten by removing whitespace.
+1. **TypeScript 전용.** 일반 `.js` / `.jsx` 소스 파일 금지. 타입 오류를 `// @ts-nocheck`, `// @ts-ignore`, `any`로 묻어 두지 말고 타입을 고친다. `tsconfig.json`의 `strict`는 켠 채로 유지한다.
+2. **서버 컴포넌트 기본.** 파일 첫 줄에 `"use client"`가 없으면 서버 컴포넌트로 본다. 브라우저 전용 API, 상태, 이벤트 핸들러가 실제로 필요할 때만 `"use client"`를 붙이고, 클라이언트 경계는 가능한 한 작게 — 상태는 위로 올리지 말고 아래로 내린다.
+3. **Supabase 호출은 `lib/` 경유.** 모든 Supabase 호출은 `lib/` 안의 헬퍼를 통한다 (예: `lib/supabase/server.ts`, `lib/supabase/client.ts`, 그리고 `lib/tasks.ts` 같은 기능별 데이터 헬퍼). 컴포넌트, 라우트 핸들러, 서버 액션은 `lib/`에서 import해서 쓰고, `createClient`나 `.from(...)`을 인라인으로 호출하지 않는다.
+4. **테스트 먼저 (TDD).** 새로운 동작 — 태스크 CRUD, 마감일 로직, 태그 필터링, 위젯 렌더링 등 — 을 구현하기 전에 실패하는 테스트를 먼저 작성한다. 테스트 없이 동작만 추가한 PR은 완료된 것으로 보지 않는다.
+5. **컴포넌트는 50줄 이내.** 각 컴포넌트 파일은 50줄 이내로 유지한다 (import와 `"use client"` 지시문은 제외). 50줄을 넘으면 자식 컴포넌트로 추출하거나, 로직을 `lib/` 헬퍼 또는 커스텀 훅으로 옮긴다 — 공백만 줄여서 맞추는 식의 압축은 금지.
 
-## Conventions to follow once code exists
+## 코드가 생긴 뒤 지킬 관례
 
-- Keep Supabase keys out of the client bundle: `SUPABASE_URL` and `SUPABASE_ANON_KEY` go in `.env.local`; the `service_role` key must only be used in server-side code (route handlers, server components, server actions).
-- Use the Supabase JS client (`@supabase/supabase-js` or `@supabase/ssr` for App Router) — do not hand-roll REST calls.
-- Tasks and tags are the two core entities; a join table (e.g., `task_tags`) is preferred over an array column so filtering by tag stays indexable.
+- Supabase 키가 클라이언트 번들에 들어가지 않도록 한다: `SUPABASE_URL`, `SUPABASE_ANON_KEY`는 `.env.local`에 두고, `service_role` 키는 서버 측 코드(라우트 핸들러, 서버 컴포넌트, 서버 액션)에서만 사용한다.
+- Supabase 호출은 공식 JS 클라이언트(`@supabase/supabase-js`, App Router에서는 `@supabase/ssr`)를 쓴다 — REST를 직접 호출하지 않는다.
+- 핵심 엔티티는 태스크와 태그 두 가지다. 태그를 배열 컬럼으로 두지 말고 조인 테이블(예: `task_tags`)로 두어 태그 기반 필터링이 인덱스로 빠르게 동작하도록 한다.
 
-## Repo context
+## 리포지터리 컨텍스트
 
-This project lives inside a larger directory `준혁의_ai회사/` that contains unrelated folders (`개발`, `마케팅`, `운영`, `권한_실습`) and an `auto-sync.sh` script at the parent level. Only operate inside `my-todo-app/` unless the user explicitly asks otherwise.
+이 프로젝트는 상위 디렉터리 `준혁의_ai회사/` 안에 들어 있고, 같은 레벨에 무관한 폴더(`개발`, `마케팅`, `운영`, `권한_실습`)와 `auto-sync.sh` 스크립트가 있다. 사용자가 명시적으로 다른 곳을 지정하지 않는 한 작업은 `my-todo-app/` 안에서만 한다.
